@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk
 import torch
 import torchvision.transforms as transforms
@@ -22,12 +22,20 @@ transform = transforms.Compose([
 def upload_image():
     file_path = filedialog.askopenfilename()
     if file_path:
-        image = Image.open(file_path)
-        image.thumbnail((250, 250))
-        img_display = ImageTk.PhotoImage(image)
-        img_label.config(image=img_display)
-        img_label.image = img_display
-        predict(image)
+        try:
+            image = Image.open(file_path)
+            if image.size[0] < 50 or image.size[1] < 50:  # Check dimensions
+                messagebox.showerror("Invalid Image", "The uploaded image is too small. Please upload a larger image.")
+                return
+            
+            image.thumbnail((250, 250))
+            img_display = ImageTk.PhotoImage(image)
+            img_label.config(image=img_display)
+            img_label.image = img_display
+            predict(image)
+
+        except Exception as e:
+            messagebox.showerror("Error", "Could not process the image. Please upload a valid image.")
 
 def predict(image):
     image_tensor = transform(image).unsqueeze(0)
